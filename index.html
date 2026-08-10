@@ -52,7 +52,6 @@
             letter-spacing: -0.5px;
         }
 
-        /* 💡 5초 동안 화면 전체를 장악할 루이 광기 오버레이 효과! */
         #flash-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -64,21 +63,22 @@
             transition: opacity 0.3s ease;
         }
 
-        #game-over { 
+        /* 💡 첫 시작 화면 및 게임오버 공용 오버레이창 */
+        .screen-overlay { 
             position: absolute; 
             top: 0; left: 0; width: 100%; height: 100%; 
             background-size: cover; 
             background-position: center;
             background-color: rgba(0,0,0,0.85);
             background-blend-mode: overlay;
-            display: none; 
+            display: flex; 
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 30; 
         }
-        #game-over h2 { font-size: 32px; color: #ff4757; text-shadow: 2px 2px 4px black; margin: 0 0 10px 0; }
-        #game-over p { font-size: 20px; font-weight: bold; text-shadow: 2px 2px 4px black; margin: 0 0 20px 0; }
+        .screen-overlay h2 { font-size: 32px; color: #ff4757; text-shadow: 2px 2px 4px black; margin: 0 0 10px 0; }
+        .screen-overlay p { font-size: 18px; font-weight: bold; text-shadow: 2px 2px 4px black; margin: 0 0 20px 0; color: #fff; }
         button { padding: 15px 40px; font-size: 20px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
     </style>
 </head>
@@ -89,9 +89,17 @@
     <div id="game-container">
         <div id="player"></div>
         <div id="watermark">모카크림의 밤산책</div>
-        <!-- 💡 5초 광기 페스티벌 오버레이 창 -->
         <div id="flash-overlay"></div>
-        <div id="game-over">
+        
+        <!-- 💡 첫 시작 버튼 화면 (음악 버그 완벽 해결용!) -->
+        <div id="start-screen" class="screen-overlay">
+            <h2>전가서 챌린지</h2>
+            <p>준비되면 버튼을 눌러주세요!</p>
+            <button onclick="startGame()">게임 시작!</button>
+        </div>
+
+        <!-- 게임오버 화면 -->
+        <div id="game-over" class="screen-overlay" style="display: none;">
             <h2>기절 😵</h2>
             <p id="final-score">최종 점수: 0</p>
             <button onclick="location.reload()">다시 도전</button>
@@ -103,18 +111,19 @@
     const player = document.getElementById("player");
     const scoreEl = document.getElementById("score");
     const missEl = document.getElementById("miss");
+    const startScreen = document.getElementById("start-screen");
     const gameOverEl = document.getElementById("game-over");
     const flashOverlay = document.getElementById("flash-overlay");
     const finalScoreEl = document.getElementById("final-score");
     const bgm = document.getElementById("bgm");
 
-    let score = 0, consecutiveMiss = 0, isGameOver = false;
-    let flashTimer = null;
+    let score = 0, consecutiveMiss = 0, isGameStarted = false, isGameOver = false;
+    let flashTimer = null, fruitInterval = null;
     const ruiImages = { normal: 'normal.jpg', level1: 'level1.jpg', level2: 'level2.jpg', level3: 'level3.jpg', pain: 'pain.jpg', ending: 'ending.jpg', star: 'ruirui.jpg' };
     player.style.backgroundImage = `url('${ruiImages.normal}')`;
 
     function movePlayer(clientX) {
-        if (isGameOver) return;
+        if (!isGameStarted || isGameOver) return;
         const rect = container.getBoundingClientRect();
         const currentWidth = player.offsetWidth;
         let x = clientX - rect.left - (currentWidth / 2);
@@ -125,21 +134,22 @@
     container.addEventListener("mousemove", (e) => movePlayer(e.clientX));
     container.addEventListener("touchmove", (e) => { e.preventDefault(); movePlayer(e.touches[0].clientX); }, {passive: false});
 
-    function playAudioOnce() {
+    // 💡 첫 시작 버튼 누를 때 음악 재생 + 게임 루프 실행
+    function startGame() {
+        isGameStarted = true;
+        startScreen.style.display = "none";
         bgm.play().catch(() => {});
-        document.removeEventListener("touchstart", playAudioOnce);
-        document.removeEventListener("click", playAudioOnce);
+        fruitInterval = setInterval(createFruit, 900);
     }
-    document.addEventListener("touchstart", playAudioOnce);
-    document.addEventListener("click", playAudioOnce);
 
     function createFruit() {
-        if (isGameOver) return;
+        if (isGameOver || !isGameStarted) return;
         const item = document.createElement("div");
         const rand = Math.random();
         
         let type;
-        if (rand < 0.12) {
+        // 💡 확률을 약 1.5% (약 1분마다 1번 꼴)로 대폭 낮춤!
+        if (rand < 0.015) {
             item.classList.add("bonus-star");
             item.style.backgroundImage = `url('${ruiImages.star}')`;
             type = { score: 100, speed: 11, isBonus: true };
@@ -171,7 +181,6 @@
                     scoreEl.innerText = score; 
                     
                     if (type.isBonus) {
-                        // 💡 ruirui.jpg 먹으면 5초 동안 화면 전체가 루이 얼굴로 도배됨!
                         triggerFlashEffect();
                     } else {
                         consecutiveMiss = 0;
@@ -204,28 +213,26 @@
         }, 20);
     }
 
-    // 💡 5초 광기 효과 함수
     function triggerFlashEffect() {
         flashOverlay.style.backgroundImage = `url('${ruiImages.star}')`;
-        flashOverlay.style.opacity = "0.85"; // 화면이 루이 얼굴로 채워짐 (과일은 밑에서 계속 떨어짐!)
+        flashOverlay.style.opacity = "0.85"; 
         
         if (flashTimer) clearTimeout(flashTimer);
         
         flashTimer = setTimeout(() => {
             flashOverlay.style.opacity = "0";
-        }, 5000); // 정확히 5초 뒤에 해제!
+        }, 5000);
     }
 
     function endGame() {
         isGameOver = true;
         bgm.pause();
-        flashOverlay.style.opacity = "0"; // 게임오버 시 오버레이는 끔
+        clearInterval(fruitInterval);
+        flashOverlay.style.opacity = "0"; 
         gameOverEl.style.backgroundImage = `url('${ruiImages.ending}')`;
         gameOverEl.style.display = "flex"; 
         finalScoreEl.innerText = "최종 점수: " + score;
     }
-
-    setInterval(createFruit, 900);
 </script>
 </body>
 </html>
