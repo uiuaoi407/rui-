@@ -9,7 +9,6 @@
         h1 { margin: 8px 0; font-size: 20px;}
         #game-container { position: relative; width: 90vw; max-width: 450px; height: 70vh; background: #222; margin: 10px auto; border: 3px solid #555; border-radius: 10px; overflow: hidden; }
         #player { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 80px; height: 80px; z-index: 10; background-size: cover; background-position: center; border-radius: 50%; border: 4px solid white; box-shadow: 0 0 20px rgba(255,255,255,0.8); transition: transform 0.1s; }
-        .player-pain { border-color: #e74c3c !important; box-shadow: 0 0 30px #e74c3c !important; transform: scale(1.1); }
         .fruit { position: absolute; font-size: 24px; top: -50px; text-align: center; }
         #score-board { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
         #game-over { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); padding: 20px; border-radius: 20px; display: none; z-index: 20; }
@@ -17,19 +16,10 @@
     </style>
 </head>
 <body>
-
     <h1>🍋 전가서 신과일 챌린지 🍋</h1>
     <div id="score-board">점수: <span id="score">0</span> | 최고: <span id="high-score">0</span></div>
     <audio id="bgm" src="배경음악.mp3" loop></audio>
-
-    <div id="game-container">
-        <div id="player"></div>
-        <div id="game-over">
-            <h2>기절 😵</h2>
-            <p id="final-score">최종 점수: 0</p>
-            <button onclick="restartGame()">다시 도전</button>
-        </div>
-    </div>
+    <div id="game-container"><div id="player"></div><div id="game-over"><h2>기절 😵</h2><p id="final-score">점수: 0</p><button onclick="location.reload()">다시 도전</button></div></div>
 
 <script>
     const container = document.getElementById("game-container");
@@ -40,10 +30,10 @@
     const finalScoreEl = document.getElementById("final-score");
     const bgm = document.getElementById("bgm");
 
-    let score = 0, highScore = 0, isGameOver = false;
+    let score = 0, isGameOver = false;
     const ruiImages = { normal: 'normal.jpg', level1: 'level1.jpg', level2: 'level2.jpg', level3: 'level3.jpg', pain: 'pain.jpg', ending: 'ending.jpg' };
+    player.style.backgroundImage = `url('${ruiImages.normal}')`;
 
-    // 마우스/터치 이동 통합
     function movePlayer(clientX) {
         if (isGameOver) return;
         const rect = container.getBoundingClientRect();
@@ -76,7 +66,7 @@
             fruit.style.top = fruitY + "px";
             const pRect = player.getBoundingClientRect(), fRect = fruit.getBoundingClientRect();
             if (fRect.left < pRect.right && fRect.right > pRect.left && fRect.top < pRect.bottom && fRect.bottom > pRect.top) {
-                if (type.isPain) { gameOver(); }
+                if (type.isPain) { endGame(); }
                 else { score += type.score; scoreEl.innerText = score; player.style.backgroundImage = `url('${ruiImages[type.stage]}')`; setTimeout(() => player.style.backgroundImage = `url('${ruiImages.normal}')`, 300); }
                 container.removeChild(fruit); clearInterval(fall);
             }
@@ -84,17 +74,16 @@
         }, 20);
     }
 
-    function gameOver() {
+    function endGame() {
         isGameOver = true;
         bgm.pause();
         player.style.backgroundImage = `url('${ruiImages.pain}')`;
-        setTimeout(() => { player.style.backgroundImage = `url('${ruiImages.ending}')`; gameOverEl.style.display = "block"; finalScoreEl.innerText = "점수: " + score; if(score > highScore) { highScore = score; highScoreEl.innerText = highScore; } }, 500);
+        setTimeout(() => { player.style.backgroundImage = `url('${ruiImages.ending}')`; gameOverEl.style.display = "block"; finalScoreEl.innerText = "최종 점수: " + score; }, 500);
     }
 
-    function restartGame() { container.querySelectorAll('.fruit').forEach(f => f.remove()); score = 0; isGameOver = false; scoreEl.innerText = 0; gameOverEl.style.display = "none"; player.style.backgroundImage = `url('${ruiImages.normal}')`; bgm.play(); setInterval(createFruit, 1000); }
-    
-    // 게임 시작
+    // 게임 시작 루프
     setInterval(createFruit, 1000);
+    bgm.play().catch(e => {});
 </script>
 </body>
 </html>
