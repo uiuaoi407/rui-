@@ -7,7 +7,24 @@
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #1a1a1a; color: white; text-align: center; margin: 0; overflow: hidden; touch-action: none; }
         h1 { margin: 8px 0; font-size: 20px;}
-        #game-container { position: relative; width: 90vw; max-width: 450px; height: 70vh; background: #222; margin: 10px auto; border: 3px solid #555; border-radius: 10px; overflow: hidden; }
+        
+        #game-container { 
+            position: relative; 
+            width: 90vw; 
+            max-width: 450px; 
+            height: 70vh; 
+            /* 💡 기본 검은 배경 유지 (사진 로딩 전 대비용) */
+            background-color: #222; 
+            margin: 10px auto; 
+            border: 3px solid #555; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            /* 💡 배경 사진이 은은하게 바뀌는 애니메이션 효과 추가 */
+            background-size: cover;
+            background-position: center;
+            transition: background-image 1s ease-in-out;
+        }
+        
         #player { 
             position: absolute; 
             bottom: 30px; 
@@ -21,7 +38,7 @@
             border-radius: 50%; 
             border: 4px solid white; 
             box-shadow: 0 0 20px rgba(255,255,255,0.8); 
-            transition: width 0.2s, height 0.2s, transform 0.1s; 
+            transition: width 0.2s, height 0.2s, transform 0.1s, background-image 0.1s; 
         }
         .fruit { position: absolute; font-size: 24px; top: -50px; text-align: center; z-index: 5; }
         
@@ -38,48 +55,47 @@
             z-index: 5;
         }
 
-        #score-board { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+        #score-board { font-size: 16px; font-weight: bold; margin-bottom: 5px; z-index: 2; position: relative; }
         
         #watermark {
             position: absolute;
             bottom: 10px;
             right: 12px;
-            color: rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.5); /* 살짝 더 진하게 */
             font-size: 12px;
             font-weight: bold;
             pointer-events: none;
-            z-index: 15;
+            z-index: 6;
             letter-spacing: -0.5px;
+            text-shadow: 0 0 3px black;
         }
 
-        #flash-overlay {
+        /* 💡 수정된 5초 히트 효과: 화면 전체를 덮는 대신, 테두리만 강렬하게 번쩍임 */
+        #hit-effect {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover;
-            background-position: center;
-            opacity: 0;
+            /* 💡 안쪽 그림자를 이용해 테두리가 금색으로 번쩍이는 효과 */
+            box-shadow: inset 0 0 0 10px rgba(255, 215, 0, 0); 
             pointer-events: none;
             z-index: 20;
-            transition: opacity 0.3s ease;
+            transition: box-shadow 0.3s ease-out;
         }
 
-        /* 💡 첫 시작 화면 및 게임오버 공용 오버레이창 */
+        /* 💡 수정된 게임오버/시작 화면: 배경이 완전히 보이도록 오버레이 투명도 대폭 낮춤 */
         .screen-overlay { 
             position: absolute; 
             top: 0; left: 0; width: 100%; height: 100%; 
-            background-size: cover; 
-            background-position: center;
-            background-color: rgba(0,0,0,0.85);
-            background-blend-mode: overlay;
+            background-color: rgba(0,0,0, 0.5); /* 💡 검은 배경 어둡게 덮는 정도를 반으로 줄임 */
             display: flex; 
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 30; 
         }
-        .screen-overlay h2 { font-size: 32px; color: #ff4757; text-shadow: 2px 2px 4px black; margin: 0 0 10px 0; }
-        .screen-overlay p { font-size: 18px; font-weight: bold; text-shadow: 2px 2px 4px black; margin: 0 0 20px 0; color: #fff; }
-        button { padding: 15px 40px; font-size: 20px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .screen-overlay h2 { font-size: 32px; color: #ff4757; text-shadow: 2px 2px 6px black; margin: 0 0 10px 0; }
+        .screen-overlay p { font-size: 18px; font-weight: bold; text-shadow: 2px 2px 6px black; margin: 0 0 20px 0; color: #fff; }
+        button { padding: 15px 40px; font-size: 20px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: background 0.2s; }
+        button:hover { background: #2980b9; }
     </style>
 </head>
 <body>
@@ -89,20 +105,21 @@
     <div id="game-container">
         <div id="player"></div>
         <div id="watermark">모카크림의 밤산책</div>
-        <div id="flash-overlay"></div>
+        <!-- 💡 수정된 히트 번쩍임 효과 -->
+        <div id="hit-effect"></div>
         
-        <!-- 💡 첫 시작 버튼 화면 (음악 버그 완벽 해결용!) -->
+        <!-- 첫 시작 버튼 화면 -->
         <div id="start-screen" class="screen-overlay">
             <h2>전가서 챌린지</h2>
             <p>준비되면 버튼을 눌러주세요!</p>
-            <button onclick="startGame()">게임 시작!</button>
+            <button onclick="firstStartGame()">게임 시작!</button>
         </div>
 
         <!-- 게임오버 화면 -->
         <div id="game-over" class="screen-overlay" style="display: none;">
             <h2>기절 😵</h2>
             <p id="final-score">최종 점수: 0</p>
-            <button onclick="location.reload()">다시 도전</button>
+            <button onclick="restartGame()">다시 시작하기</button>
         </div>
     </div>
 
@@ -113,17 +130,24 @@
     const missEl = document.getElementById("miss");
     const startScreen = document.getElementById("start-screen");
     const gameOverEl = document.getElementById("game-over");
-    const flashOverlay = document.getElementById("flash-overlay");
+    const hitEffect = document.getElementById("hit-effect");
     const finalScoreEl = document.getElementById("final-score");
     const bgm = document.getElementById("bgm");
 
-    let score = 0, consecutiveMiss = 0, isGameStarted = false, isGameOver = false;
-    let flashTimer = null, fruitInterval = null;
+    let score = 0, consecutiveMiss = 0, isGameRunning = false;
+    let hitTimer = null, fruitInterval = null;
+    
+    // 💡 배경 이미지 파일 이름 목록 (500점 단위로 교체됨)
+    const bgImages = ['normal.jpg', 'level1.jpg', 'level2.jpg', 'level3.jpg'];
+    let currentBgIndex = 0;
+
     const ruiImages = { normal: 'normal.jpg', level1: 'level1.jpg', level2: 'level2.jpg', level3: 'level3.jpg', pain: 'pain.jpg', ending: 'ending.jpg', star: 'ruirui.jpg' };
     player.style.backgroundImage = `url('${ruiImages.normal}')`;
+    // 💡 초기 게임판 배경 설정
+    container.style.backgroundImage = `url('${ruiImages.normal}')`;
 
     function movePlayer(clientX) {
-        if (!isGameStarted || isGameOver) return;
+        if (!isGameRunning) return;
         const rect = container.getBoundingClientRect();
         const currentWidth = player.offsetWidth;
         let x = clientX - rect.left - (currentWidth / 2);
@@ -134,21 +158,45 @@
     container.addEventListener("mousemove", (e) => movePlayer(e.clientX));
     container.addEventListener("touchmove", (e) => { e.preventDefault(); movePlayer(e.touches[0].clientX); }, {passive: false});
 
-    // 💡 첫 시작 버튼 누를 때 음악 재생 + 게임 루프 실행
-    function startGame() {
-        isGameStarted = true;
+    // 💡 1. 첫 시작 (음악 버그 해결용)
+    function firstStartGame() {
         startScreen.style.display = "none";
-        bgm.play().catch(() => {});
+        bgm.play().catch(() => console.log("오디오 재생 실패 (사용자 상호작용 필요)"));
+        runGameLoop();
+    }
+
+    // 💡 1. 재시작 (게임오버 후 버튼 클릭 시 바로 시작)
+    function restartGame() {
+        gameOverEl.style.display = "none";
+        runGameLoop();
+    }
+
+    // 💡 공통 게임 실행 로직
+    function runGameLoop() {
+        score = 0; consecutiveMiss = 0; currentBgIndex = 0;
+        scoreEl.innerText = score; missEl.innerText = consecutiveMiss;
+        player.style.left = "50%"; player.style.transform = "translateX(-50%)"; // 중앙 리셋
+        // 💡 게임 재시작 시 배경 초기화
+        container.style.backgroundImage = `url('${ruiImages[bgImages[currentBgIndex]]}')`;
+        isGameRunning = true;
+        if (fruitInterval) clearInterval(fruitInterval);
         fruitInterval = setInterval(createFruit, 900);
     }
 
     function createFruit() {
-        if (isGameOver || !isGameStarted) return;
+        if (!isGameRunning) return;
         const item = document.createElement("div");
         const rand = Math.random();
         
         let type;
-        // 💡 확률을 약 1.5% (약 1분마다 1번 꼴)로 대폭 낮춤!
+        // 💡 2. 배경 교체 로직 (점수가 500점 단위로 오를 때마다 배경 사진 변경)
+        let nextBgIndex = Math.floor(score / 500);
+        if (nextBgIndex > currentBgIndex && nextBgIndex < bgImages.length) {
+            currentBgIndex = nextBgIndex;
+            container.style.backgroundImage = `url('${ruiImages[bgImages[currentBgIndex]]}')`;
+        }
+
+        // 💡 3. 루이별(ruirui.jpg) 등장 확률 (여전히 낮게 유지)
         if (rand < 0.015) {
             item.classList.add("bonus-star");
             item.style.backgroundImage = `url('${ruiImages.star}')`;
@@ -168,7 +216,7 @@
 
         let itemY = -50;
         const fall = setInterval(() => {
-            if (isGameOver) { clearInterval(fall); return; }
+            if (!isGameRunning) { clearInterval(fall); return; }
             itemY += type.speed;
             item.style.top = itemY + "px";
             const pRect = player.getBoundingClientRect(), iRect = item.getBoundingClientRect();
@@ -181,54 +229,46 @@
                     scoreEl.innerText = score; 
                     
                     if (type.isBonus) {
-                        triggerFlashEffect();
+                        // 💡 3. 수정된 히트 효과: 금색 테두리가 번쩍!
+                        triggerHitEffect();
                     } else {
                         consecutiveMiss = 0;
                         missEl.innerText = consecutiveMiss;
                     }
                     
                     let bonusSize = Math.min(80 + Math.floor(score / 1000) * 15, 160);
-                    player.style.width = bonusSize + "px";
-                    player.style.height = bonusSize + "px";
-
+                    player.style.width = bonusSize + "px"; player.style.height = bonusSize + "px";
                     let stageImg = type.isBonus ? 'level3' : type.stage;
                     player.style.backgroundImage = `url('${ruiImages[stageImg]}')`; 
                     setTimeout(() => player.style.backgroundImage = `url('${ruiImages.normal}')`, 300); 
                 }
                 container.removeChild(item); clearInterval(fall);
             }
-            
             if (itemY > container.offsetHeight) { 
-                container.removeChild(item); 
-                clearInterval(fall);
-                
+                container.removeChild(item); clearInterval(fall);
                 if (!type.isPain && !type.isBonus) {
-                    consecutiveMiss++;
-                    missEl.innerText = consecutiveMiss;
-                    if (consecutiveMiss >= 5) {
-                        endGame();
-                    }
+                    consecutiveMiss++; missEl.innerText = consecutiveMiss;
+                    if (consecutiveMiss >= 5) endGame();
                 }
             }
         }, 20);
     }
 
-    function triggerFlashEffect() {
-        flashOverlay.style.backgroundImage = `url('${ruiImages.star}')`;
-        flashOverlay.style.opacity = "0.85"; 
-        
-        if (flashTimer) clearTimeout(flashTimer);
-        
-        flashTimer = setTimeout(() => {
-            flashOverlay.style.opacity = "0";
-        }, 5000);
+    // 💡 3. 수정된 히트 효과 함수 (테두리 번쩍임)
+    function triggerHitEffect() {
+        hitEffect.style.boxShadow = "inset 0 0 0 10px rgba(255, 215, 0, 0.7)"; // 테두리 번쩍
+        if (hitTimer) clearTimeout(hitTimer);
+        hitTimer = setTimeout(() => {
+            hitEffect.style.boxShadow = "inset 0 0 0 10px rgba(255, 215, 0, 0)"; // 서서히 사라짐
+        }, 500); // 0.5초 동안 지속
     }
 
     function endGame() {
-        isGameOver = true;
+        isGameRunning = false;
         bgm.pause();
+        bgm.currentTime = 0; // 음악 초기화
         clearInterval(fruitInterval);
-        flashOverlay.style.opacity = "0"; 
+        // 💡 4. 엔딩 이미지: 기존처럼 큼지막하게 보이되, 배경 사진이 살짝 비치도록 오버레이 투명도 조절
         gameOverEl.style.backgroundImage = `url('${ruiImages.ending}')`;
         gameOverEl.style.display = "flex"; 
         finalScoreEl.innerText = "최종 점수: " + score;
