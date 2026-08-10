@@ -34,6 +34,7 @@
     const ruiImages = { normal: 'normal.jpg', level1: 'level1.jpg', level2: 'level2.jpg', level3: 'level3.jpg', pain: 'pain.jpg', ending: 'ending.jpg' };
     player.style.backgroundImage = `url('${ruiImages.normal}')`;
 
+    // 터치/마우스 이동
     function movePlayer(clientX) {
         if (isGameOver) return;
         const rect = container.getBoundingClientRect();
@@ -44,6 +45,15 @@
     }
     container.addEventListener("mousemove", (e) => movePlayer(e.clientX));
     container.addEventListener("touchmove", (e) => { e.preventDefault(); movePlayer(e.touches[0].clientX); }, {passive: false});
+
+    // 모바일 오디오 제한 해제 (첫 터치/클릭 시 음악 재생)
+    function playAudioOnce() {
+        bgm.play().catch(() => {});
+        document.removeEventListener("touchstart", playAudioOnce);
+        document.removeEventListener("click", playAudioOnce);
+    }
+    document.addEventListener("touchstart", playAudioOnce);
+    document.addEventListener("click", playAudioOnce);
 
     function createFruit() {
         if (isGameOver) return;
@@ -81,9 +91,8 @@
         setTimeout(() => { player.style.backgroundImage = `url('${ruiImages.ending}')`; gameOverEl.style.display = "block"; finalScoreEl.innerText = "최종 점수: " + score; }, 500);
     }
 
-    // 게임 시작 루프
+    // 게임 시작 (과일 생성 루프)
     setInterval(createFruit, 1000);
-    bgm.play().catch(e => {});
 </script>
 </body>
 </html>
