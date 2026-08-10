@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>전가서의 신과일 6단계 짤방 챌린지!</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+            text-align: center;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none; /* 모바일 터치 시 화면 흔들림 방지 */
+        }
+        h1 { margin: 8px 0; font-size: 20px;}
+        #game-container {
+            position: relative;
+            width: 90vw;
+            max-width: 450px;
+            height: 70vh;
+            background: #222;
+            margin: 10px auto;
+            border: 3px solid #555;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        #player {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            z-index: 10;
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 0 20px rgba(255,255,255,0.8);
+            transition: transform 0.1s, border-color 0.2s, box-shadow 0.2s;
+        }
+        .player-pain {
+            border-color: #e74c3c !important;
+            box-shadow: 0 0 30px #e74c3c !important;
+            transform: scale(1.1) translateX(-45%);
+        }
+        .fruit {
+            position: absolute;
+            font-size: 24px;
+            top: -50px;
+            text-align: center;
+        }
+        #score-board { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        #game-over {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9); padding: 20px; border-radius: 20px; display: none; z-index: 20;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🍋 전가서 신과일 챌린지 🍋</h1>
+    <div id="score-board">점수: <span id="score">0</span> | 최고: <span id="high-score">0</span></div>
+    
+    <audio id="bgm" src="배경음악.mp3" loop></audio>
+
+    <div id="game-container">
+        <div id="player"></div>
+        <div id="game-over">
+            <h2>기절 😵</h2>
+            <button onclick="restartGame()">다시 도전</button>
+        </div>
+    </div>
+
+<script>
+    const container = document.getElementById("game-container");
+    const player = document.getElementById("player");
+    const scoreEl = document.getElementById("score");
+    const gameOverEl = document.getElementById("game-over");
+    let score = 0, isGameOver = false;
+
+    const ruiImages = { normal: 'normal.jpg', level1: 'level1.jpg', level2: 'level2.jpg', level3: 'level3.jpg', pain: 'pain.jpg', ending: 'ending.jpg' };
+    player.style.backgroundImage = `url('${ruiImages.normal}')`;
+
+    // 💡 마우스 & 터치 이동 공통 함수
+    function movePlayer(clientX) {
+        if (isGameOver) return;
+        const rect = container.getBoundingClientRect();
+        let x = clientX - rect.left - 40; 
+        if (x < 0) x = 0;
+        if (x > rect.width - 80) x = rect.width - 80;
+        player.style.left = x + "px";
+        player.style.transform = "none"; // 기본 드래그 시 transform 초기화
+    }
+
+    container.addEventListener("mousemove", (e) => movePlayer(e.clientX));
+    container.addEventListener("touchmove", (e) => {
+        e.preventDefault();
+        movePlayer(e.touches[0].clientX);
+    }, {passive: false});
+
+    // 기존 게임 로직 (생략된 부분은 위에서 주신 코드와 동일합니다)
+    function createFruit() { /* 위에서 주신 코드 그대로 유지 */ }
+    // ... 이하 생략 (위 코드의 나머지 함수들을 여기에 그대로 붙여넣으세요!)
+    
+    // startGame 등 핵심 함수만 잘 챙기시면 폰에서 바로 됩니다!
+</script>
+</body>
+</html>
