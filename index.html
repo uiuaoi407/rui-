@@ -12,13 +12,8 @@
             position: relative; width: 90vw; max-width: 450px; height: 70vh; 
             background-color: #000; margin: 10px auto; border: 3px solid #555; border-radius: 10px; overflow: hidden; 
             background-size: cover; background-position: center; 
+            /* 💡 배경 전환 시 부드럽게 페이드 되도록 설정 */
             transition: background-image 0.8s ease-in-out;
-        }
-        
-        #flash-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover; background-position: center; opacity: 0; pointer-events: none;
-            z-index: 20; transition: opacity 0.5s ease-in-out;
         }
 
         #player { 
@@ -44,7 +39,6 @@
     <audio id="bgm" src="배경음악.mp3" loop></audio>
     <div id="game-container">
         <div id="player"></div>
-        <div id="flash-overlay"></div>
         <div id="watermark">모카크림의 밤산책</div>
         <div id="start-screen" class="screen-overlay">
             <h2>전가서 챌린지</h2>
@@ -62,7 +56,6 @@
     const player = document.getElementById("player");
     const scoreEl = document.getElementById("score");
     const missEl = document.getElementById("miss");
-    const flashOverlay = document.getElementById("flash-overlay");
     const bgm = document.getElementById("bgm");
 
     const bgImages = [
@@ -101,7 +94,6 @@
         score = 0; consecutiveMiss = 0; isFlashActive = false; scoreEl.innerText = "0"; missEl.innerText = "0";
         isGameRunning = true; 
         container.style.backgroundImage = `url('${bgImages[0]}')`;
-        flashOverlay.style.opacity = "0";
         player.style.left = "50%";
         player.style.transform = "translateX(-50%)";
         if (fruitInterval) clearInterval(fruitInterval);
@@ -111,7 +103,7 @@
     function createFruit() {
         if (!isGameRunning) return;
         
-        // 💡 이벤트(ruirui 화면)가 아닐 때만 점수에 따라 배경 업데이트
+        // 💡 이벤트(ruirui 화면) 중이 아닐 때만 점수에 따라 배경 업데이트
         if (!isFlashActive) {
             let bgIdx = Math.floor(score / 500) % bgImages.length;
             container.style.backgroundImage = `url('${bgImages[bgIdx]}')`;
@@ -187,19 +179,19 @@
         }, 20);
     }
 
-    // 💡 ruirui 이벤트 5초 동안 유지되도록 수정 (배경 겹침 방지 및 부드러운 복귀)
+    // 💡 보너스를 먹으면 5초 동안 게임 배경 자체를 ruirui.jpg로 바꾸고 과일/바는 그대로 노출
     let flashTimer = null;
     function triggerFlash() {
         isFlashActive = true;
-        flashOverlay.style.backgroundImage = `url('${ruiImages.star}')`;
-        flashOverlay.style.opacity = "1"; // 선명하게 전체 표시
+        container.style.backgroundImage = `url('${ruiImages.star}')`;
 
         if (flashTimer) clearTimeout(flashTimer);
 
-        // 정확히 5초(5000밀리초)동안 ruirui 화면 유지 후 부드럽게 사라짐
         flashTimer = setTimeout(() => {
-            flashOverlay.style.opacity = "0";
             isFlashActive = false;
+            // 5초 뒤 원래 점수대에 맞는 배경으로 복귀
+            let bgIdx = Math.floor(score / 500) % bgImages.length;
+            container.style.backgroundImage = `url('${bgImages[bgIdx]}')`;
         }, 5000);
     }
 
@@ -208,7 +200,6 @@
         bgm.pause(); 
         clearInterval(fruitInterval);
         isFlashActive = false;
-        flashOverlay.style.opacity = "0";
         container.style.backgroundImage = `url('${ruiImages.ending}')`;
         document.getElementById("game-over").style.display = "flex";
         document.getElementById("final-score").innerText = "최종 점수: " + score;
