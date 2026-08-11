@@ -6,10 +6,10 @@
     <title>전가서의 신과일 6단계 짤방 챌린지!</title>
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #000; color: white; text-align: center; margin: 0; overflow: hidden; touch-action: none; }
-        h1 { margin: 8px 0; font-size: 20px;}
+        h1 { margin: 12px 0; font-size: 20px;}
         
         #game-container { 
-            position: relative; width: 90vw; max-width: 450px; height: 70vh; 
+            position: relative; width: 90vw; max-width: 450px; height: 72vh; 
             background-color: #000; margin: 10px auto; border: 3px solid #555; border-radius: 10px; overflow: hidden; 
             background-size: cover; background-position: center; 
             transition: background-image 0.8s ease-in-out;
@@ -22,11 +22,7 @@
         .fruit { position: absolute; font-size: 24px; top: -50px; text-align: center; z-index: 5; white-space: nowrap; }
         .bonus-star { position: absolute; width: 45px; height: 45px; top: -50px; background-size: cover; border-radius: 50%; border: 2px solid gold; box-shadow: 0 0 15px gold; z-index: 5; }
 
-        #score-board { font-size: 16px; font-weight: bold; margin-bottom: 5px; z-index: 2; position: relative; }
-        
-        #visitor-counter { font-size: 13px; color: #aaa; margin-bottom: 8px; z-index: 2; position: relative; }
-        #visitor-count { color: #3498db; font-weight: bold; }
-
+        #score-board { font-size: 16px; font-weight: bold; margin-bottom: 12px; z-index: 2; position: relative; }
         #watermark { position: absolute; bottom: 10px; right: 12px; color: rgba(255, 255, 255, 0.6); font-size: 12px; z-index: 6; pointer-events: none; }
 
         .screen-overlay { 
@@ -39,8 +35,6 @@
 <body>
     <h1>🍋 전가서 신과일 챌린지 🍋</h1>
     <div id="score-board">점수: <span id="score">0</span> | 연속 놓침: <span id="miss">0</span>/5</div>
-    
-    <div id="visitor-counter">누적 플레이어 수: <span id="visitor-count">로딩중...</span>명</div>
 
     <audio id="bgm" src="배경음악.mp3" loop></audio>
     <div id="game-container">
@@ -58,25 +52,6 @@
     </div>
 
 <script>
-    // 완전히 독립된 고유 네임스페이스와 키값 적용 (0부터 새로 시작)
-    const uniqueNamespace = "mokacream_jengaseo_game_2026_v1";
-    const uniqueKey = "unique_visits";
-
-    fetch(`https://api.countapi.xyz/hit/${uniqueNamespace}/${uniqueKey}`)
-        .then(async response => {
-            if (!response.ok) {
-                const createRes = await fetch(`https://api.countapi.xyz/create?namespace=${uniqueNamespace}&key=${uniqueKey}&value=1`);
-                return createRes.json();
-            }
-            return response.json();
-        })
-        .then(data => {
-            document.getElementById('visitor-count').innerText = data.value;
-        })
-        .catch(error => {
-            document.getElementById('visitor-count').innerText = "1";
-        });
-
     const container = document.getElementById("game-container");
     const player = document.getElementById("player");
     const scoreEl = document.getElementById("score");
