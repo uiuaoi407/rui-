@@ -12,7 +12,6 @@
             position: relative; width: 90vw; max-width: 450px; height: 70vh; 
             background-color: #000; margin: 10px auto; border: 3px solid #555; border-radius: 10px; overflow: hidden; 
             background-size: cover; background-position: center; 
-            /* 💡 배경 전환 시 부드럽게 페이드 되도록 설정 */
             transition: background-image 0.8s ease-in-out;
         }
 
@@ -103,7 +102,6 @@
     function createFruit() {
         if (!isGameRunning) return;
         
-        // 💡 이벤트(ruirui 화면) 중이 아닐 때만 점수에 따라 배경 업데이트
         if (!isFlashActive) {
             let bgIdx = Math.floor(score / 500) % bgImages.length;
             container.style.backgroundImage = `url('${bgImages[bgIdx]}')`;
@@ -179,7 +177,6 @@
         }, 20);
     }
 
-    // 💡 보너스를 먹으면 5초 동안 게임 배경 자체를 ruirui.jpg로 바꾸고 과일/바는 그대로 노출
     let flashTimer = null;
     function triggerFlash() {
         isFlashActive = true;
@@ -189,7 +186,6 @@
 
         flashTimer = setTimeout(() => {
             isFlashActive = false;
-            // 5초 뒤 원래 점수대에 맞는 배경으로 복귀
             let bgIdx = Math.floor(score / 500) % bgImages.length;
             container.style.backgroundImage = `url('${bgImages[bgIdx]}')`;
         }, 5000);
