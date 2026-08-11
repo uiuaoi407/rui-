@@ -113,7 +113,8 @@
         } else {
             item.classList.add("fruit");
             let r = Math.random();
-            // 💡 과일 개수 명확하게 매칭 (파인애플 1개, 복숭아 2개, 키위 3개, 사과 4개)
+            
+            // 💡 명확한 이모티콘 텍스트 지정 (복숭아 2개, 키위 3개, 사과 4개)
             if (r < 0.5) {
                 item.innerText = '🍍';
                 type = { score: 10, speed: 6, isPain: false };
@@ -129,7 +130,7 @@
             }
         }
 
-        item.style.left = Math.random() * (container.offsetWidth - 50) + "px";
+        item.style.left = Math.random() * (container.offsetWidth - 60) + "px";
         container.appendChild(item);
 
         let y = -50;
