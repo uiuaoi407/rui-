@@ -134,51 +134,48 @@
             let type;
             
             if (r < 0.5) {
-                // 단일 과일 (🍍)
                 const item = document.createElement("div");
                 item.classList.add("fruit");
                 item.innerText = '🍍';
                 type = { score: 10, speed: 6, isPain: false };
                 item.style.left = Math.random() * (container.offsetWidth - 40) + "px";
                 container.appendChild(item);
-                startFruitFall(item, type, false);
+                startFruitFall(item, type);
             } else if (r < 0.8) {
-                // 더블 과일 (🍑🍑)
                 const item = document.createElement("div");
                 item.classList.add("fruit");
                 item.innerText = '🍑🍑';
                 type = { score: 20, speed: 6, isPain: false };
                 item.style.left = Math.random() * (container.offsetWidth - 60) + "px";
                 container.appendChild(item);
-                startFruitFall(item, type, false);
+                startFruitFall(item, type);
             } else if (r < 0.95) {
-                // 트리플 과일 (🥝🥝🥝)
                 const item = document.createElement("div");
                 item.classList.add("fruit");
                 item.innerText = '🥝🥝🥝';
                 type = { score: 50, speed: 7, isPain: false };
                 item.style.left = Math.random() * (container.offsetWidth - 80) + "px";
                 container.appendChild(item);
-                startFruitFall(item, type, false);
+                startFruitFall(item, type);
             } else {
-                // 💡 사과 4개 폭탄 (다양한 형태의 패턴 적용)
+                // 💡 사과 4개 뭉치 간격을 다른 과일 수준으로 좁게 압축 (간격 22~25px 단위)
                 let patternType = Math.floor(Math.random() * 4); // 0: 가로, 1: 정사각형, 2: 위1아래3, 3: 위3아래1
-                let baseX = Math.random() * (container.offsetWidth - 140) + 10;
+                let baseX = Math.random() * (container.offsetWidth - 100) + 10;
                 let baseY = -50;
                 
                 let appleOffsets = [];
                 if (patternType === 0) {
-                    // 1. 가로 일렬 4개
-                    appleOffsets = [ {x: 0, y: 0}, {x: 35, y: 0}, {x: 70, y: 0}, {x: 105, y: 0} ];
+                    // 1. 가로 일렬 4개 (간격 좁게 압축)
+                    appleOffsets = [ {x: 0, y: 0}, {x: 24, y: 0}, {x: 48, y: 0}, {x: 72, y: 0} ];
                 } else if (patternType === 1) {
                     // 2. 정사각형 (위 2개, 아래 2개)
-                    appleOffsets = [ {x: 0, y: 0}, {x: 50, y: 0}, {x: 0, y: 35}, {x: 50, y: 35} ];
+                    appleOffsets = [ {x: 0, y: 0}, {x: 30, y: 0}, {x: 0, y: 26}, {x: 30, y: 26} ];
                 } else if (patternType === 2) {
                     // 3. 위 1개, 아래 3개 삼각형
-                    appleOffsets = [ {x: 35, y: 0}, {x: 0, y: 35}, {x: 35, y: 35}, {x: 70, y: 35} ];
+                    appleOffsets = [ {x: 20, y: 0}, {x: 0, y: 26}, {x: 20, y: 26}, {x: 40, y: 26} ];
                 } else {
                     // 4. 위 3개, 아래 1개 삼각형
-                    appleOffsets = [ {x: 0, y: 0}, {x: 35, y: 0}, {x: 70, y: 0}, {x: 35, y: 35} ];
+                    appleOffsets = [ {x: 0, y: 0}, {x: 20, y: 0}, {x: 40, y: 0}, {x: 20, y: 26} ];
                 }
 
                 let apples = [];
@@ -197,8 +194,7 @@
         }
     }
 
-    // 일반 과일 및 보너스 떨어지는 로직
-    function startFruitFall(item, type, isPain) {
+    function startFruitFall(item, type) {
         let y = -50;
         const fall = setInterval(() => {
             if (!isGameRunning) { clearInterval(fall); return; }
@@ -231,7 +227,6 @@
         }, 20);
     }
 
-    // 💡 사과 그룹(4개)이 뭉쳐서 떨어지고 하나라도 부딪히면 게임 오버되는 로직
     function startAppleGroupFall(apples) {
         let y = -50;
         const fall = setInterval(() => {
@@ -248,14 +243,13 @@
 
             apples.forEach(apple => {
                 let currentTop = parseFloat(apple.style.top) || y;
-                apple.style.top = (y + (currentTop - (y - 10))) + "px"; // 상대 위치 유지하며 하강
+                apple.style.top = (y + (currentTop - (y - 10))) + "px";
                 
                 const i = apple.getBoundingClientRect();
                 if (i.top < container.getBoundingClientRect().bottom) {
                     allPassed = false;
                 }
 
-                // 플레이어와 충돌 체크
                 if (i.left < p.right && i.right > p.left && i.top < p.bottom && i.bottom > p.top) {
                     hit = true;
                 }
