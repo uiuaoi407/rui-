@@ -5,94 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>전가서의 신과일 6단계 짤방 챌린지!</title>
     <style>
-        body { font-family: 'Arial', sans-serif; background-color: #1a1a1a; color: white; text-align: center; margin: 0; overflow: hidden; touch-action: none; }
+        body { font-family: 'Arial', sans-serif; background-color: #000; color: white; text-align: center; margin: 0; overflow: hidden; touch-action: none; }
         h1 { margin: 8px 0; font-size: 20px;}
         
         #game-container { 
-            position: relative; 
-            width: 90vw; 
-            max-width: 450px; 
-            height: 70vh; 
-            /* 💡 기본 검은 배경 유지 (사진 로딩 전 대비용) */
-            background-color: #000; 
-            margin: 10px auto; 
-            border: 3px solid #555; 
-            border-radius: 10px; 
-            overflow: hidden; 
-            /* 💡 배경 사진이 은은하게 바뀌는 애니메이션 효과 추가 */
-            background-size: cover;
-            background-position: center;
-            transition: background-image 1s ease-in-out;
+            position: relative; width: 90vw; max-width: 450px; height: 70vh; 
+            background-color: #000; margin: 10px auto; border: 3px solid #555; border-radius: 10px; overflow: hidden; 
+            background-size: cover; background-position: center; transition: background-image 0.5s ease;
         }
         
+        /* 💡 1. 루이 사진을 확실하게 띄울 레이어 */
+        #flash-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center; opacity: 0; pointer-events: none;
+            z-index: 20; transition: opacity 0.3s;
+        }
+
         #player { 
-            position: absolute; 
-            bottom: 30px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            width: 80px; 
-            height: 80px; 
-            z-index: 10; 
-            background-size: cover; 
-            background-position: center; 
-            border-radius: 50%; 
-            border: 4px solid white; 
-            box-shadow: 0 0 20px rgba(255,255,255,0.8); 
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 80px; height: 80px; z-index: 10; 
+            background-size: cover; background-position: center; border-radius: 50%; border: 4px solid white; box-shadow: 0 0 20px rgba(255,255,255,0.8);
             transition: width 0.2s, height 0.2s, transform 0.1s, background-image 0.1s; 
         }
         .fruit { position: absolute; font-size: 24px; top: -50px; text-align: center; z-index: 5; }
-        
-        .bonus-star {
-            position: absolute;
-            width: 45px;
-            height: 45px;
-            top: -50px;
-            background-size: cover;
-            background-position: center;
-            border-radius: 50%;
-            border: 2px solid gold;
-            box-shadow: 0 0 15px gold;
-            z-index: 5;
-        }
+        .bonus-star { position: absolute; width: 45px; height: 45px; top: -50px; background-size: cover; border-radius: 50%; border: 2px solid gold; box-shadow: 0 0 15px gold; z-index: 5; }
 
-        #score-board { font-size: 16px; font-weight: bold; margin-bottom: 5px; z-index: 2; position: relative; color: #fff; text-shadow: 0 0 4px #000; }
-        
-        #watermark {
-            position: absolute;
-            bottom: 10px;
-            right: 12px;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 12px;
-            font-weight: bold;
-            pointer-events: none;
-            z-index: 6;
-            letter-spacing: -0.5px;
-            text-shadow: 0 0 4px #000;
-        }
-
-        #hit-effect {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            box-shadow: inset 0 0 0 10px rgba(255, 215, 0, 0); 
-            pointer-events: none;
-            z-index: 20;
-            transition: box-shadow 0.3s ease-out;
-        }
+        #score-board { font-size: 16px; font-weight: bold; margin-bottom: 5px; z-index: 2; position: relative; }
+        #watermark { position: absolute; bottom: 10px; right: 12px; color: rgba(255, 255, 255, 0.6); font-size: 12px; z-index: 6; pointer-events: none; }
 
         .screen-overlay { 
-            position: absolute; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background-color: rgba(0,0,0, 0.5);
-            display: flex; 
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 30; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0, 0.6);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 30; 
         }
-        .screen-overlay h2 { font-size: 32px; color: #ff4757; text-shadow: 2px 2px 6px black; margin: 0 0 10px 0; }
-        .screen-overlay p { font-size: 18px; font-weight: bold; text-shadow: 2px 2px 6px black; margin: 0 0 20px 0; color: #fff; }
-        button { padding: 15px 40px; font-size: 20px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: background 0.2s; }
-        button:hover { background: #2980b9; }
+        button { padding: 15px 40px; font-size: 20px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -101,181 +45,94 @@
     <audio id="bgm" src="배경음악.mp3" loop></audio>
     <div id="game-container">
         <div id="player"></div>
+        <div id="flash-overlay"></div> <!-- 루이 사진 띄울 곳 -->
         <div id="watermark">모카크림의 밤산책</div>
-        <div id="hit-effect"></div>
-        
-        <!-- 첫 시작 버튼 화면 -->
         <div id="start-screen" class="screen-overlay">
             <h2>전가서 챌린지</h2>
-            <p>준비되면 버튼을 눌러주세요!</p>
             <button onclick="firstStartGame()">게임 시작!</button>
         </div>
-
-        <!-- 게임오버 화면 -->
         <div id="game-over" class="screen-overlay" style="display: none;">
             <h2>기절 😵</h2>
-            <p id="final-score">최종 점수: 0</p>
+            <p id="final-score"></p>
             <button onclick="restartGame()">다시 시작하기</button>
         </div>
     </div>
 
 <script>
-    const container = document.getElementById("game-container");
-    const player = document.getElementById("player");
-    const scoreEl = document.getElementById("score");
-    const missEl = document.getElementById("miss");
-    const startScreen = document.getElementById("start-screen");
-    const gameOverEl = document.getElementById("game-over");
-    const hitEffect = document.getElementById("hit-effect");
-    const finalScoreEl = document.getElementById("final-score");
-    const bgm = document.getElementById("bgm");
-
-    let score = 0, consecutiveMiss = 0, isGameRunning = false;
-    let hitTimer = null, fruitInterval = null;
-    
-    // 💡 2. 배경 교체 로직: 사용할 이미지 파일 이름 목록 (대소문자 주의)
+    const container = document.getElementById("game-container"), player = document.getElementById("player"), scoreEl = document.getElementById("score"), missEl = document.getElementById("miss");
+    const flashOverlay = document.getElementById("flash-overlay"), bgm = document.getElementById("bgm");
     const bgImages = ['normal.jpg', 'level1.jpg', 'level2.jpg', 'level3.jpg'];
-    let currentBgIndex = 0;
-
     const ruiImages = { normal: 'normal.jpg', level1: 'level1.jpg', level2: 'level2.jpg', level3: 'level3.jpg', pain: 'pain.jpg', ending: 'ending.jpg', star: 'ruirui.jpg' };
-    player.style.backgroundImage = `url('${ruiImages.normal}')`;
-    // 💡 2. 초기 게임판 배경 설정 (normal.jpg)
-    container.style.backgroundImage = `url('${ruiImages.normal}')`;
+    let score = 0, consecutiveMiss = 0, isGameRunning = false, flashTimer = null, fruitInterval = null;
 
-    function movePlayer(clientX) {
-        if (!isGameRunning) return;
-        const rect = container.getBoundingClientRect();
-        const currentWidth = player.offsetWidth;
-        let x = clientX - rect.left - (currentWidth / 2);
-        x = Math.max(0, Math.min(x, rect.width - currentWidth));
-        player.style.left = x + "px";
-        player.style.transform = "none";
-    }
-    container.addEventListener("mousemove", (e) => movePlayer(e.clientX));
-    container.addEventListener("touchmove", (e) => { e.preventDefault(); movePlayer(e.touches[0].clientX); }, {passive: false});
+    function playBgm() { bgm.pause(); bgm.currentTime = 0; bgm.play().catch(() => {}); }
+    function firstStartGame() { document.getElementById("start-screen").style.display = "none"; playBgm(); runGame(); }
+    function restartGame() { document.getElementById("game-over").style.display = "none"; playBgm(); runGame(); }
 
-    // 💡 1. 첫 시작 (음악 재생 + 게임 루프)
-    function firstStartGame() {
-        startScreen.style.display = "none";
-        playBgm(); // 💡 재시작 시에도 이 함수를 호출하면 됩니다!
-        runGameLogic();
-    }
-
-    // 💡 1. 재시작 (게임오버 버튼 클릭 시)
-    function restartGame() {
-        gameOverEl.style.display = "none";
-        playBgm(); // 💡 음악 처음부터 다시 재생!
-        runGameLogic();
-    }
-
-    // 💡 1. 음악 재생 함수 (초기화 후 재생)
-    function playBgm() {
-        bgm.pause(); 
-        bgm.currentTime = 0; // 💡 음악 시간을 0으로 초기화!
-        bgm.play().catch(() => console.log("오디오 재생 실패"));
-    }
-
-    // 💡 공통 게임 실행 로직
-    function runGameLogic() {
-        score = 0; consecutiveMiss = 0; currentBgIndex = 0;
-        scoreEl.innerText = score; missEl.innerText = consecutiveMiss;
-        player.style.left = "50%"; player.style.transform = "translateX(-50%)";
-        // 💡 2. 게임 재시작 시 배경 초기화
-        container.style.backgroundImage = `url('${ruiImages.normal}')`; 
-        isGameRunning = true;
+    function runGame() {
+        score = 0; consecutiveMiss = 0; scoreEl.innerText = "0"; missEl.innerText = "0";
+        isGameRunning = true; container.style.backgroundImage = `url('${bgImages[0]}')`;
         if (fruitInterval) clearInterval(fruitInterval);
         fruitInterval = setInterval(createFruit, 900);
     }
 
     function createFruit() {
         if (!isGameRunning) return;
-        const item = document.createElement("div");
-        const rand = Math.random();
         
-        let type;
-        // 💡 2. 배경 교체 로직 (점수가 500점 단위로 오를 때마다 배경 사진 변경)
-        let nextBgIndex = Math.floor(score / 500);
-        if (nextBgIndex > currentBgIndex && nextBgIndex < bgImages.length) {
-            currentBgIndex = nextBgIndex;
-            // 💡 실제 이미지 파일 경로로 배경 설정
-            container.style.backgroundImage = `url('${bgImages[currentBgIndex]}')`;
-            console.log("배경 변경:", bgImages[currentBgIndex]); // 디버그용
-        }
+        // 💡 2. 500점마다 무한 로테이션 (0~3 인덱스 반복)
+        let bgIdx = Math.floor(score / 500) % bgImages.length;
+        container.style.backgroundImage = `url('${bgImages[bgIdx]}')`;
 
-        // 💡 3. 루이별(ruirui.jpg) 등장 확률 (여전히 낮게 유지)
-        if (rand < 0.015) {
+        const item = document.createElement("div");
+        if (Math.random() < 0.015) {
             item.classList.add("bonus-star");
             item.style.backgroundImage = `url('${ruiImages.star}')`;
-            type = { score: 100, speed: 11, isBonus: true };
+            item.onclick = () => {
+                score += 100; scoreEl.innerText = score;
+                triggerFlash(); // 💡 1. 루이 사진 띄우고 5초간 번쩍임
+                container.removeChild(item);
+            };
+            type = { speed: 11, isBonus: true };
         } else {
             item.classList.add("fruit");
-            let fruitRand = Math.random();
-            type = fruitRand < 0.5 ? { emoji: '🍍', score: 10, speed: 5, stage: 'level1' } :
-                   fruitRand < 0.8 ? { emoji: '🍑🍑', score: 20, speed: 6, stage: 'level2' } :
-                   fruitRand < 0.95 ? { emoji: '🥝🥝🥝', score: 50, speed: 7, stage: 'level3' } :
-                   { emoji: '🍎🍎🍎🍎', score: -100, speed: 10, stage: 'pain', isPain: true };
-            item.innerText = type.emoji;
+            let r = Math.random();
+            item.innerText = r < 0.5 ? '🍍' : r < 0.8 ? '🍑' : r < 0.95 ? '🥝' : '🍎';
+            type = { speed: r < 0.95 ? 6 : 10, isPain: r >= 0.95 };
         }
 
         item.style.left = Math.random() * (container.offsetWidth - 40) + "px";
         container.appendChild(item);
 
-        let itemY = -50;
+        let y = -50;
         const fall = setInterval(() => {
             if (!isGameRunning) { clearInterval(fall); return; }
-            itemY += type.speed;
-            item.style.top = itemY + "px";
-            const pRect = player.getBoundingClientRect(), iRect = item.getBoundingClientRect();
-            
-            if (iRect.left < pRect.right && iRect.right > pRect.left && iRect.top < pRect.bottom && iRect.bottom > pRect.top) {
-                if (type.isPain) { 
-                    endGame(); 
-                } else { 
-                    score += type.score; 
-                    scoreEl.innerText = score; 
-                    
-                    if (type.isBonus) {
-                        triggerHitEffect();
-                    } else {
-                        consecutiveMiss = 0;
-                        missEl.innerText = consecutiveMiss;
-                    }
-                    
-                    let bonusSize = Math.min(80 + Math.floor(score / 1000) * 15, 160);
-                    player.style.width = bonusSize + "px"; player.style.height = bonusSize + "px";
-                    let stageImg = type.isBonus ? 'level3' : type.stage;
-                    player.style.backgroundImage = `url('${ruiImages[stageImg]}')`; 
-                    setTimeout(() => player.style.backgroundImage = `url('${ruiImages.normal}')`, 300); 
-                }
-                container.removeChild(item); clearInterval(fall);
+            y += type.speed; item.style.top = y + "px";
+            // 간단 충돌 체크
+            const p = player.getBoundingClientRect(), i = item.getBoundingClientRect();
+            if (i.top > p.top && i.left > p.left && i.right < p.right) {
+                if (type.isPain) endGame();
+                else if (!type.isBonus) { score += 10; scoreEl.innerText = score; container.removeChild(item); clearInterval(fall); }
             }
-            if (itemY > container.offsetHeight) { 
-                container.removeChild(item); clearInterval(fall);
-                if (!type.isPain && !type.isBonus) {
-                    consecutiveMiss++; missEl.innerText = consecutiveMiss;
-                    if (consecutiveMiss >= 5) endGame();
-                }
-            }
+            if (y > container.offsetHeight) { container.removeChild(item); clearInterval(fall); if(!type.isBonus && !type.isPain) { consecutiveMiss++; missEl.innerText = consecutiveMiss; if(consecutiveMiss >= 5) endGame(); } }
         }, 20);
     }
 
-    function triggerHitEffect() {
-        hitEffect.style.boxShadow = "inset 0 0 0 10px rgba(255, 215, 0, 0.7)";
-        if (hitTimer) clearTimeout(hitTimer);
-        hitTimer = setTimeout(() => {
-            hitEffect.style.boxShadow = "inset 0 0 0 10px rgba(255, 215, 0, 0)";
-        }, 500);
+    // 💡 1. 5초간 번쩍이는 로직
+    function triggerFlash() {
+        flashOverlay.style.backgroundImage = `url('${ruiImages.star}')`;
+        let count = 0;
+        let blink = setInterval(() => {
+            flashOverlay.style.opacity = (count % 2 === 0) ? "0.8" : "0.3";
+            count++;
+            if (count > 10) { clearInterval(blink); flashOverlay.style.opacity = "0"; }
+        }, 500); // 0.5초 간격으로 5초 동안 10번 반짝임
     }
 
     function endGame() {
-        isGameRunning = false;
-        bgm.pause();
-        // bgm.currentTime = 0; // 💡 음악 초기화는 playBgm()에서 함
-        clearInterval(fruitInterval);
-        // 💡 4. 엔딩 이미지 설정 (강하게 보이도록 배경에 직접 설정)
+        isGameRunning = false; bgm.pause(); clearInterval(fruitInterval);
         container.style.backgroundImage = `url('${ruiImages.ending}')`;
-        gameOverEl.style.display = "flex"; 
-        finalScoreEl.innerText = "최종 점수: " + score;
+        document.getElementById("game-over").style.display = "flex";
+        document.getElementById("final-score").innerText = "최종 점수: " + score;
     }
 </script>
 </body>
