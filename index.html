@@ -107,35 +107,98 @@
             container.style.backgroundImage = `url('${bgImages[bgIdx]}')`;
         }
 
-        const item = document.createElement("div");
-        let type;
-
         if (Math.random() < 0.015) {
+            const item = document.createElement("div");
             item.classList.add("bonus-star");
             item.style.backgroundImage = `url('${ruiImages.star}')`;
-            type = { speed: 11, isBonus: true };
+            item.style.left = Math.random() * (container.offsetWidth - 60) + "px";
+            container.appendChild(item);
+            let y = -50;
+            const fall = setInterval(() => {
+                if (!isGameRunning) { clearInterval(fall); return; }
+                y += 11; 
+                item.style.top = y + "px";
+                const p = player.getBoundingClientRect(), i = item.getBoundingClientRect();
+                if (i.left < p.right && i.right > p.left && i.top < p.bottom && i.bottom > p.top) {
+                    score += 100;
+                    scoreEl.innerText = score;
+                    triggerFlash();
+                    container.removeChild(item); 
+                    clearInterval(fall);
+                    return;
+                }
+                if (y > container.offsetHeight) { container.removeChild(item); clearInterval(fall); }
+            }, 20);
         } else {
-            item.classList.add("fruit");
             let r = Math.random();
+            let type;
             
             if (r < 0.5) {
+                // 단일 과일 (🍍)
+                const item = document.createElement("div");
+                item.classList.add("fruit");
                 item.innerText = '🍍';
                 type = { score: 10, speed: 6, isPain: false };
+                item.style.left = Math.random() * (container.offsetWidth - 40) + "px";
+                container.appendChild(item);
+                startFruitFall(item, type, false);
             } else if (r < 0.8) {
+                // 더블 과일 (🍑🍑)
+                const item = document.createElement("div");
+                item.classList.add("fruit");
                 item.innerText = '🍑🍑';
                 type = { score: 20, speed: 6, isPain: false };
+                item.style.left = Math.random() * (container.offsetWidth - 60) + "px";
+                container.appendChild(item);
+                startFruitFall(item, type, false);
             } else if (r < 0.95) {
+                // 트리플 과일 (🥝🥝🥝)
+                const item = document.createElement("div");
+                item.classList.add("fruit");
                 item.innerText = '🥝🥝🥝';
                 type = { score: 50, speed: 7, isPain: false };
+                item.style.left = Math.random() * (container.offsetWidth - 80) + "px";
+                container.appendChild(item);
+                startFruitFall(item, type, false);
             } else {
-                item.innerText = '🍎🍎🍎🍎';
-                type = { score: -100, speed: 10, isPain: true };
+                // 💡 사과 4개 폭탄 (다양한 형태의 패턴 적용)
+                let patternType = Math.floor(Math.random() * 4); // 0: 가로, 1: 정사각형, 2: 위1아래3, 3: 위3아래1
+                let baseX = Math.random() * (container.offsetWidth - 140) + 10;
+                let baseY = -50;
+                
+                let appleOffsets = [];
+                if (patternType === 0) {
+                    // 1. 가로 일렬 4개
+                    appleOffsets = [ {x: 0, y: 0}, {x: 35, y: 0}, {x: 70, y: 0}, {x: 105, y: 0} ];
+                } else if (patternType === 1) {
+                    // 2. 정사각형 (위 2개, 아래 2개)
+                    appleOffsets = [ {x: 0, y: 0}, {x: 50, y: 0}, {x: 0, y: 35}, {x: 50, y: 35} ];
+                } else if (patternType === 2) {
+                    // 3. 위 1개, 아래 3개 삼각형
+                    appleOffsets = [ {x: 35, y: 0}, {x: 0, y: 35}, {x: 35, y: 35}, {x: 70, y: 35} ];
+                } else {
+                    // 4. 위 3개, 아래 1개 삼각형
+                    appleOffsets = [ {x: 0, y: 0}, {x: 35, y: 0}, {x: 70, y: 0}, {x: 35, y: 35} ];
+                }
+
+                let apples = [];
+                appleOffsets.forEach(offset => {
+                    let apple = document.createElement("div");
+                    apple.classList.add("fruit");
+                    apple.innerText = '🍎';
+                    apple.style.left = (baseX + offset.x) + "px";
+                    apple.style.top = (baseY + offset.y) + "px";
+                    container.appendChild(apple);
+                    apples.push(apple);
+                });
+
+                startAppleGroupFall(apples);
             }
         }
+    }
 
-        item.style.left = Math.random() * (container.offsetWidth - 60) + "px";
-        container.appendChild(item);
-
+    // 일반 과일 및 보너스 떨어지는 로직
+    function startFruitFall(item, type, isPain) {
         let y = -50;
         const fall = setInterval(() => {
             if (!isGameRunning) { clearInterval(fall); return; }
@@ -145,21 +208,14 @@
             const p = player.getBoundingClientRect(), i = item.getBoundingClientRect();
             
             if (i.left < p.right && i.right > p.left && i.top < p.bottom && i.bottom > p.top) {
-                if (type.isPain) {
-                    endGame();
-                } else if (type.isBonus) {
-                    score += 100;
-                    scoreEl.innerText = score;
-                    triggerFlash();
-                } else {
-                    score += type.score;
-                    scoreEl.innerText = score;
-                    consecutiveMiss = 0;
-                    missEl.innerText = consecutiveMiss;
-                    
-                    player.style.backgroundImage = `url('${ruiImages.level1}')`;
-                    setTimeout(() => player.style.backgroundImage = `url('${ruiImages.normal}')`, 200);
-                }
+                score += type.score;
+                scoreEl.innerText = score;
+                consecutiveMiss = 0;
+                missEl.innerText = consecutiveMiss;
+                
+                player.style.backgroundImage = `url('${ruiImages.level1}')`;
+                setTimeout(() => player.style.backgroundImage = `url('${ruiImages.normal}')`, 200);
+
                 container.removeChild(item); 
                 clearInterval(fall);
                 return;
@@ -168,11 +224,53 @@
             if (y > container.offsetHeight) { 
                 container.removeChild(item); 
                 clearInterval(fall);
-                if (!type.isBonus && !type.isPain) {
-                    consecutiveMiss++; 
-                    missEl.innerText = consecutiveMiss; 
-                    if (consecutiveMiss >= 5) endGame();
+                consecutiveMiss++; 
+                missEl.innerText = consecutiveMiss; 
+                if (consecutiveMiss >= 5) endGame();
+            }
+        }, 20);
+    }
+
+    // 💡 사과 그룹(4개)이 뭉쳐서 떨어지고 하나라도 부딪히면 게임 오버되는 로직
+    function startAppleGroupFall(apples) {
+        let y = -50;
+        const fall = setInterval(() => {
+            if (!isGameRunning) { 
+                apples.forEach(a => { if (a.parentNode) a.parentNode.removeChild(a); });
+                clearInterval(fall); 
+                return; 
+            }
+            y += 10; 
+            
+            let allPassed = true;
+            let hit = false;
+            const p = player.getBoundingClientRect();
+
+            apples.forEach(apple => {
+                let currentTop = parseFloat(apple.style.top) || y;
+                apple.style.top = (y + (currentTop - (y - 10))) + "px"; // 상대 위치 유지하며 하강
+                
+                const i = apple.getBoundingClientRect();
+                if (i.top < container.getBoundingClientRect().bottom) {
+                    allPassed = false;
                 }
+
+                // 플레이어와 충돌 체크
+                if (i.left < p.right && i.right > p.left && i.top < p.bottom && i.bottom > p.top) {
+                    hit = true;
+                }
+            });
+
+            if (hit) {
+                apples.forEach(a => { if (a.parentNode) a.parentNode.removeChild(a); });
+                clearInterval(fall);
+                endGame();
+                return;
+            }
+
+            if (allPassed || y > container.offsetHeight + 50) {
+                apples.forEach(a => { if (a.parentNode) a.parentNode.removeChild(a); });
+                clearInterval(fall);
             }
         }, 20);
     }
