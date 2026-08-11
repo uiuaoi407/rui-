@@ -24,8 +24,8 @@
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 80px; height: 80px; z-index: 10; 
             background-size: cover; background-position: center; border-radius: 50%; border: 4px solid white; box-shadow: 0 0 20px rgba(255,255,255,0.8); 
         }
-        .fruit { position: absolute; font-size: 24px; top: -50px; text-align: center; z-index: 5; white-space: nowrap; }
-        .bonus-star { position: absolute; width: 45px; height: 45px; top: -50px; background-size: cover; border-radius: 50%; border: 2px solid gold; box-shadow: 0 0 15px gold; z-index: 5; }
+        .fruit { position: absolute; font-size: 24px; top: -50px; text-align: center; z-index: 5; }
+        .bonus-star { position: absolute; width: 45px; height: 45px; top: -50px; background-size: cover; border-radius: 50%; border: 2px solid gold; box-shadow: 0 0 15px gold; z-index: 5; cursor: pointer; }
 
         #score-board { font-size: 16px; font-weight: bold; margin-bottom: 5px; z-index: 2; position: relative; }
         #watermark { position: absolute; bottom: 10px; right: 12px; color: rgba(255, 255, 255, 0.6); font-size: 12px; z-index: 6; pointer-events: none; }
@@ -72,6 +72,7 @@
 
     player.style.backgroundImage = `url('${ruiImages.normal}')`;
 
+    // 마우스 및 터치 이동 이벤트 (완전 안정화)
     function movePlayer(clientX) {
         if (!isGameRunning) return;
         const rect = container.getBoundingClientRect();
@@ -100,6 +101,7 @@
     function createFruit() {
         if (!isGameRunning) return;
         
+        // 500점마다 배경 무한 로테이션
         let bgIdx = Math.floor(score / 500) % bgImages.length;
         container.style.backgroundImage = `url('${bgImages[bgIdx]}')`;
 
@@ -113,24 +115,11 @@
         } else {
             item.classList.add("fruit");
             let r = Math.random();
-            
-            // 💡 명확한 이모티콘 텍스트 지정 (복숭아 2개, 키위 3개, 사과 4개)
-            if (r < 0.5) {
-                item.innerText = '🍍';
-                type = { score: 10, speed: 6, isPain: false };
-            } else if (r < 0.8) {
-                item.innerText = '🍑🍑';
-                type = { score: 20, speed: 6, isPain: false };
-            } else if (r < 0.95) {
-                item.innerText = '🥝🥝🥝';
-                type = { score: 50, speed: 7, isPain: false };
-            } else {
-                item.innerText = '🍎🍎🍎🍎';
-                type = { score: -100, speed: 10, isPain: true };
-            }
+            item.innerText = r < 0.5 ? '🍍' : r < 0.8 ? '🍑' : r < 0.95 ? '🥝' : '🍎';
+            type = { speed: r < 0.95 ? 6 : 10, isPain: r >= 0.95 };
         }
 
-        item.style.left = Math.random() * (container.offsetWidth - 60) + "px";
+        item.style.left = Math.random() * (container.offsetWidth - 40) + "px";
         container.appendChild(item);
 
         let y = -50;
@@ -141,6 +130,7 @@
             
             const p = player.getBoundingClientRect(), i = item.getBoundingClientRect();
             
+            // 과일 먹었을 때 충돌 감지
             if (i.left < p.right && i.right > p.left && i.top < p.bottom && i.bottom > p.top) {
                 if (type.isPain) {
                     endGame();
@@ -149,11 +139,12 @@
                     scoreEl.innerText = score;
                     triggerFlash();
                 } else {
-                    score += type.score;
+                    score += 10;
                     scoreEl.innerText = score;
                     consecutiveMiss = 0;
                     missEl.innerText = consecutiveMiss;
                     
+                    // 먹었을 때 잠시 표정 변화
                     player.style.backgroundImage = `url('${ruiImages.level1}')`;
                     setTimeout(() => player.style.backgroundImage = `url('${ruiImages.normal}')`, 200);
                 }
@@ -162,6 +153,7 @@
                 return;
             }
 
+            // 바닥에 떨어졌을 때
             if (y > container.offsetHeight) { 
                 container.removeChild(item); 
                 clearInterval(fall);
