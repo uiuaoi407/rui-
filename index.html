@@ -23,6 +23,11 @@
         .bonus-star { position: absolute; width: 45px; height: 45px; top: -50px; background-size: cover; border-radius: 50%; border: 2px solid gold; box-shadow: 0 0 15px gold; z-index: 5; }
 
         #score-board { font-size: 16px; font-weight: bold; margin-bottom: 5px; z-index: 2; position: relative; }
+        
+        /* 실시간 방문자 카운터 스타일 추가 */
+        #visitor-counter { font-size: 13px; color: #aaa; margin-bottom: 8px; z-index: 2; position: relative; }
+        #visitor-count { color: #3498db; font-weight: bold; }
+
         #watermark { position: absolute; bottom: 10px; right: 12px; color: rgba(255, 255, 255, 0.6); font-size: 12px; z-index: 6; pointer-events: none; }
 
         .screen-overlay { 
@@ -35,6 +40,10 @@
 <body>
     <h1>🍋 전가서 신과일 챌린지 🍋</h1>
     <div id="score-board">점수: <span id="score">0</span> | 연속 놓침: <span id="miss">0</span>/5</div>
+    
+    <!-- 실시간 조회수 표시 영역 -->
+    <div id="visitor-counter">누적 플레이어 수: <span id="visitor-count">로딩중...</span>명</div>
+
     <audio id="bgm" src="배경음악.mp3" loop></audio>
     <div id="game-container">
         <div id="player"></div>
@@ -51,6 +60,24 @@
     </div>
 
 <script>
+    // 페이지 접속 시 실시간 조회수 자동 증가 및 반영 (Hit Counter API)
+    fetch('https://api.countapi.xyz/hit/jengaseo-fruit-challenge-mokacream/visits')
+        .then(async response => {
+            if (!response.ok) {
+                // 만약 API가 처음이라 생성이 안 되어있다면 생성용 주소로 한 번 더 요청
+                const createRes = await fetch('https://api.countapi.xyz/create?namespace=jengaseo-fruit-challenge-mokacream&key=visits&value=1');
+                return createRes.json();
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('visitor-count').innerText = data.value;
+        })
+        .catch(error => {
+            // 외부 API 차단이나 오류 시 대비용 대체 텍스트
+            document.getElementById('visitor-count').innerText = "100+";
+        });
+
     const container = document.getElementById("game-container");
     const player = document.getElementById("player");
     const scoreEl = document.getElementById("score");
@@ -158,23 +185,18 @@
                 container.appendChild(item);
                 startFruitFall(item, type);
             } else {
-                // 💡 사과 4개 뭉치 간격을 다른 과일 수준으로 좁게 압축 (간격 22~25px 단위)
-                let patternType = Math.floor(Math.random() * 4); // 0: 가로, 1: 정사각형, 2: 위1아래3, 3: 위3아래1
+                let patternType = Math.floor(Math.random() * 4);
                 let baseX = Math.random() * (container.offsetWidth - 100) + 10;
                 let baseY = -50;
                 
                 let appleOffsets = [];
                 if (patternType === 0) {
-                    // 1. 가로 일렬 4개 (간격 좁게 압축)
                     appleOffsets = [ {x: 0, y: 0}, {x: 24, y: 0}, {x: 48, y: 0}, {x: 72, y: 0} ];
                 } else if (patternType === 1) {
-                    // 2. 정사각형 (위 2개, 아래 2개)
                     appleOffsets = [ {x: 0, y: 0}, {x: 30, y: 0}, {x: 0, y: 26}, {x: 30, y: 26} ];
                 } else if (patternType === 2) {
-                    // 3. 위 1개, 아래 3개 삼각형
                     appleOffsets = [ {x: 20, y: 0}, {x: 0, y: 26}, {x: 20, y: 26}, {x: 40, y: 26} ];
                 } else {
-                    // 4. 위 3개, 아래 1개 삼각형
                     appleOffsets = [ {x: 0, y: 0}, {x: 20, y: 0}, {x: 40, y: 0}, {x: 20, y: 26} ];
                 }
 
