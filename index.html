@@ -1,18 +1,3 @@
-/* Copyright © 모카크림의밤산책. All rights reserved. */
-
-// 1. 방문자 콘솔 기록 (F12 누르면 나만 보임)
-let visitCount = localStorage.getItem('visitCount') || 0;
-visitCount++;
-localStorage.setItem('visitCount', visitCount);
-console.log(`%c[모카크림의밤산책] 전가서 신 과일 게임 방문자 수: ${visitCount}명`, 'color: #ff6b6b; font-weight: bold; font-size: 16px;');
-
-// 2. 간단한 도용 방지 (우클릭 및 F12 방지)
-document.addEventListener('contextmenu', event => event.preventDefault()); // 우클릭 방지
-document.addEventListener('keydown', event => {
-    if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
-        event.preventDefault(); // F12 및 개발자 도구 단축키 방지
-    }
-});
 <!DOCTYPE html>
 <html lang="ko">
 <head>
