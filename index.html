@@ -7,17 +7,6 @@
     
     <script>
         /* Copyright © 모카크림의밤산책. All rights reserved. */
-        window.getPlayCount = function() {
-            let totalPlays = localStorage.getItem('totalGamePlays') || 0;
-            console.log(`%c[모카크림의밤산책 관리자] 총 게임 플레이 횟수: ${totalPlays}회`, 'color: #3498db; font-weight: bold; font-size: 16px;');
-            return totalPlays;
-        };
-
-        window.resetPlayCount = function() {
-            localStorage.setItem('totalGamePlays', 0);
-            console.log('%c[모카크림의밤산책 관리자] 플레이 횟수가 0으로 초기화되었습니다.', 'color: #e74c3c; font-weight: bold; font-size: 14px;');
-        };
-
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('keydown', event => {
             if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
@@ -53,7 +42,6 @@
         }
         button { padding: 15px 40px; font-size: 20px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 10px; font-weight: bold; }
         .copyright-text { margin-top: 15px; font-size: 11px; color: rgba(255, 255, 255, 0.6); }
-        .start-play-count { margin-top: 8px; font-size: 12px; color: rgba(255, 255, 255, 0.85); }
     </style>
 </head>
 <body>
@@ -68,7 +56,6 @@
             <h2>전가서 챌린지</h2>
             <button onclick="firstStartGame()">게임 시작!</button>
             <div class="copyright-text">© 2026 모카크림의밤산책. All rights reserved. Fan-made project.</div>
-            <div class="start-play-count">총 플레이 된 횟수 : <span id="total-plays-count">0</span>회</div>
         </div>
         <div id="game-over" class="screen-overlay" style="display: none;">
             <h2>기절 😵</h2>
@@ -83,14 +70,6 @@
     const scoreEl = document.getElementById("score");
     const missEl = document.getElementById("miss");
     const bgm = document.getElementById("bgm");
-    const totalPlaysCountEl = document.getElementById("total-plays-count");
-
-    // localStorage 기반 전역 누적 플레이 횟수 반영 함수
-    function updateEnumTypeDisplay() {
-        let totalPlays = localStorage.getItem('totalGamePlays') || 0;
-        totalPlaysCountEl.innerText = totalPlays;
-    }
-    updateEnumTypeDisplay();
 
     const bgImages = [
         'normal.jpg', 'level1.jpg', 'level2.jpg', 'level3.jpg',
@@ -121,24 +100,15 @@
     container.addEventListener("touchmove", (e) => { e.preventDefault(); movePlayer(e.touches[0].clientX); }, {passive: false});
 
     function playBgm() { bgm.pause(); bgm.currentTime = 0; bgm.play().catch(() => {}); }
-    
-    function recordGamePlay() {
-        let totalPlays = parseInt(localStorage.getItem('totalGamePlays') || '0', 10);
-        totalPlays++;
-        localStorage.setItem('totalGamePlays', totalPlays);
-        updateEnumTypeDisplay();
-    }
 
     function firstStartGame() { 
         document.getElementById("start-screen").style.display = "none"; 
-        recordGamePlay(); 
         playBgm(); 
         runGame(); 
     }
     
     function restartGame() { 
         document.getElementById("game-over").style.display = "none"; 
-        recordGamePlay(); 
         playBgm(); 
         runGame(); 
     }
