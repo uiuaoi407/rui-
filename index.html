@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>전가서의 신과일 6단계 짤방 챌린지!</title>
+    
+    <!-- 👇 1. 보안 및 방문자 카운터 코드는 <head> 안쪽에 이렇게 스크립트 태그로 감싸서 넣어야 합니다! -->
+    <script>
+        /* Copyright © 모카크림의밤산책. All rights reserved. */
+        let visitCount = localStorage.getItem('visitCount') || 0;
+        visitCount++;
+        localStorage.setItem('visitCount', visitCount);
+        console.log(`%c[모카크림의밤산책] 전가서 신 과일 게임 방문자 수: ${visitCount}명`, 'color: #ff6b6b; font-weight: bold; font-size: 16px;');
+
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', event => {
+            if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
+                event.preventDefault();
+            }
+        });
+    </script>
+
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #000; color: white; text-align: center; margin: 0; overflow: hidden; touch-action: none; }
         h1 { margin: 12px 0; font-size: 20px;}
