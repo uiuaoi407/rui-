@@ -5,13 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>전가서의 신과일 6단계 짤방 챌린지!</title>
     
-    <!-- 👇 1. 보안 및 방문자 카운터 코드는 <head> 안쪽에 이렇게 스크립트 태그로 감싸서 넣어야 합니다! -->
+    <!-- 👇 플레이어는 볼 수 없고 관리자(나)만 콘솔에서 누적 플레이 횟수를 확인하는 코드 -->
     <script>
         /* Copyright © 모카크림의밤산책. All rights reserved. */
-        let visitCount = localStorage.getItem('visitCount') || 0;
-        visitCount++;
-        localStorage.setItem('visitCount', visitCount);
-        console.log(`%c[모카크림의밤산책] 전가서 신 과일 게임 방문자 수: ${visitCount}명`, 'color: #ff6b6b; font-weight: bold; font-size: 16px;');
+        
+        // 개발자 전용 누적 게임 플레이 횟수 확인 함수 (콘솔에 getPlayCount() 입력 시 확인 가능)
+        window.getPlayCount = function() {
+            let totalPlays = localStorage.getItem('totalGamePlays') || 0;
+            console.log(`%c[모카크림의밤산책 관리자] 총 게임 플레이 횟수: ${totalPlays}회`, 'color: #3498db; font-weight: bold; font-size: 16px;');
+            return totalPlays;
+        };
+
+        // 개발자 전용 플레이 횟수 초기화 함수 (필요시 콘솔에 resetPlayCount() 입력)
+        window.resetPlayCount = function() {
+            localStorage.setItem('totalGamePlays', 0);
+            console.log('%c[모카크림의밤산책 관리자] 플레이 횟수가 0으로 초기화되었습니다.', 'color: #e74c3c; font-weight: bold; font-size: 14px;');
+        };
 
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('keydown', event => {
@@ -104,8 +113,27 @@
     container.addEventListener("touchmove", (e) => { e.preventDefault(); movePlayer(e.touches[0].clientX); }, {passive: false});
 
     function playBgm() { bgm.pause(); bgm.currentTime = 0; bgm.play().catch(() => {}); }
-    function firstStartGame() { document.getElementById("start-screen").style.display = "none"; playBgm(); runGame(); }
-    function restartGame() { document.getElementById("game-over").style.display = "none"; playBgm(); runGame(); }
+    
+    // 게임 시작 시 누적 플레이 횟수 기록 로직 추가
+    function recordGamePlay() {
+        let totalPlays = parseInt(localStorage.getItem('totalGamePlays') || '0', 10);
+        totalPlays++;
+        localStorage.setItem('totalGamePlays', totalPlays);
+    }
+
+    function firstStartGame() { 
+        document.getElementById("start-screen").style.display = "none"; 
+        recordGamePlay(); // 첫 시작 시 횟수 증가
+        playBgm(); 
+        runGame(); 
+    }
+    
+    function restartGame() { 
+        document.getElementById("game-over").style.display = "none"; 
+        recordGamePlay(); // 다시 시작 시 횟수 증가
+        playBgm(); 
+        runGame(); 
+    }
 
     function runGame() {
         score = 0; consecutiveMiss = 0; isFlashActive = false; scoreEl.innerText = "0"; missEl.innerText = "0";
