@@ -1,0 +1,246 @@
+const container = document.getElementById("game-container");
+const player = document.getElementById("player");
+const scoreEl = document.getElementById("score");
+const missEl = document.getElementById("miss");
+const bgm = document.getElementById("bgm");
+
+const bgImages = [
+    'normal.jpg', 'level1.jpg', 'level2.jpg', 'level3.jpg',
+    'shot1.jpg', 'shot2.jpg', 'shot3.jpg', 'shot4.jpg', 'shot5.jpg', 'shot6.jpg'
+];
+
+bgImages.forEach(imgSrc => {
+    const img = new Image();
+    img.src = imgSrc;
+});
+
+const ruiImages = { normal: 'normal.jpg', level1: 'level1.jpg', level2: 'level2.jpg', level3: 'level3.jpg', pain: 'pain.jpg', ending: 'ending.jpg', star: 'ruirui.jpg' };
+
+let score = 0, consecutiveMiss = 0, isGameRunning = false, isFlashActive = false;
+let fruitInterval = null;
+
+player.style.backgroundImage = `url('${ruiImages.normal}')`;
+
+function movePlayer(clientX) {
+    if (!isGameRunning) return;
+    const rect = container.getBoundingClientRect();
+    let x = clientX - rect.left - (player.offsetWidth / 2);
+    x = Math.max(0, Math.min(x, rect.width - player.offsetWidth));
+    player.style.left = x + "px";
+    player.style.transform = "none";
+}
+container.addEventListener("mousemove", (e) => movePlayer(e.clientX));
+container.addEventListener("touchmove", (e) => { e.preventDefault(); movePlayer(e.touches[0].clientX); }, {passive: false});
+
+function playBgm() { bgm.pause(); bgm.currentTime = 0; bgm.play().catch(() => {}); }
+
+function firstStartGame() { 
+    document.getElementById("start-screen").style.display = "none"; 
+    playBgm(); 
+    runGame(); 
+}
+
+function restartGame() { 
+    document.getElementById("game-over").style.display = "none"; 
+    playBgm(); 
+    runGame(); 
+}
+
+function runGame() {
+    score = 0; consecutiveMiss = 0; isFlashActive = false; scoreEl.innerText = "0"; missEl.innerText = "0";
+    isGameRunning = true; 
+    container.style.backgroundImage = `url('${bgImages[0]}')`;
+    player.style.left = "50%";
+    player.style.transform = "translateX(-50%)";
+    if (fruitInterval) clearInterval(fruitInterval);
+    fruitInterval = setInterval(createFruit, 900);
+}
+
+function createFruit() {
+    if (!isGameRunning) return;
+    
+    if (!isFlashActive) {
+        let bgIdx = Math.floor(score / 500) % bgImages.length;
+        container.style.backgroundImage = `url('${bgImages[bgIdx]}')`;
+    }
+
+    if (Math.random() < 0.015) {
+        const item = document.createElement("div");
+        item.classList.add("bonus-star");
+        item.style.backgroundImage = `url('${ruiImages.star}')`;
+        item.style.left = Math.random() * (container.offsetWidth - 60) + "px";
+        container.appendChild(item);
+        let y = -50;
+        const fall = setInterval(() => {
+            if (!isGameRunning) { clearInterval(fall); return; }
+            y += 11; 
+            item.style.top = y + "px";
+            const p = player.getBoundingClientRect(), i = item.getBoundingClientRect();
+            if (i.left < p.right && i.right > p.left && i.top < p.bottom && i.bottom > p.top) {
+                score += 100;
+                scoreEl.innerText = score;
+                triggerFlash();
+                container.removeChild(item); 
+                clearInterval(fall);
+                return;
+            }
+            if (y > container.offsetHeight) { container.removeChild(item); clearInterval(fall); }
+        }, 20);
+    } else {
+        let r = Math.random();
+        let type;
+        
+        if (r < 0.5) {
+            const item = document.createElement("div");
+            item.classList.add("fruit");
+            item.innerText = '🍍';
+            type = { score: 10, speed: 6, isPain: false };
+            item.style.left = Math.random() * (container.offsetWidth - 40) + "px";
+            container.appendChild(item);
+            startFruitFall(item, type);
+        } else if (r < 0.8) {
+            const item = document.createElement("div");
+            item.classList.add("fruit");
+            item.innerText = '🍑🍑';
+            type = { score: 20, speed: 6, isPain: false };
+            item.style.left = Math.random() * (container.offsetWidth - 60) + "px";
+            container.appendChild(item);
+            startFruitFall(item, type);
+        } else if (r < 0.95) {
+            const item = document.createElement("div");
+            item.classList.add("fruit");
+            item.innerText = '🥝🥝🥝';
+            type = { score: 50, speed: 7, isPain: false };
+            item.style.left = Math.random() * (container.offsetWidth - 80) + "px";
+            container.appendChild(item);
+            startFruitFall(item, type);
+        } else {
+            let patternType = Math.floor(Math.random() * 4);
+            let baseX = Math.random() * (container.offsetWidth - 100) + 10;
+            let baseY = -50;
+            
+            let appleOffsets = [];
+            if (patternType === 0) {
+                appleOffsets = [ {x: 0, y: 0}, {x: 24, y: 0}, {x: 48, y: 0}, {x: 72, y: 0} ];
+            } else if (patternType === 1) {
+                appleOffsets = [ {x: 0, y: 0}, {x: 30, y: 0}, {x: 0, y: 26}, {x: 30, y: 26} ];
+            } else if (patternType === 2) {
+                appleOffsets = [ {x: 20, y: 0}, {x: 0, y: 26}, {x: 20, y: 26}, {x: 40, y: 26} ];
+            } else {
+                appleOffsets = [ {x: 0, y: 0}, {x: 20, y: 0}, {x: 40, y: 0}, {x: 20, y: 26} ];
+            }
+
+            let apples = [];
+            appleOffsets.forEach(offset => {
+                let apple = document.createElement("div");
+                apple.classList.add("fruit");
+                apple.innerText = '🍎';
+                apple.style.left = (baseX + offset.x) + "px";
+                apple.style.top = (baseY + offset.y) + "px";
+                container.appendChild(apple);
+                apples.push(apple);
+            });
+
+            startAppleGroupFall(apples);
+        }
+    }
+}
+
+function startFruitFall(item, type) {
+    let y = -50;
+    const fall = setInterval(() => {
+        if (!isGameRunning) { clearInterval(fall); return; }
+        y += type.speed; 
+        item.style.top = y + "px";
+        
+        const p = player.getBoundingClientRect(), i = item.getBoundingClientRect();
+        
+        if (i.left < p.right && i.right > p.left && i.top < p.bottom && i.bottom > p.top) {
+            score += type.score;
+            scoreEl.innerText = score;
+            consecutiveMiss = 0;
+            missEl.innerText = consecutiveMiss;
+            
+            player.style.backgroundImage = `url('${ruiImages.level1}')`;
+            setTimeout(() => player.style.backgroundImage = `url('${ruiImages.normal}')`, 200);
+
+            container.removeChild(item); 
+            clearInterval(fall);
+            return;
+        }
+
+        if (y > container.offsetHeight) { 
+            container.removeChild(item); 
+            clearInterval(fall);
+            consecutiveMiss++; 
+            missEl.innerText = consecutiveMiss; 
+            if (consecutiveMiss >= 5) endGame();
+        }
+    }, 20);
+}
+
+function startAppleGroupFall(apples) {
+    let y = -50;
+    const fall = setInterval(() => {
+        if (!isGameRunning) { 
+            apples.forEach(a => { if (a.parentNode) a.parentNode.removeChild(a); });
+            clearInterval(fall); 
+            return; 
+        }
+        y += 10; 
+        
+        let allPassed = true;
+        let hit = false;
+        const p = player.getBoundingClientRect();
+
+        apples.forEach(apple => {
+            let currentTop = parseFloat(apple.style.top) || y;
+            apple.style.top = (y + (currentTop - (y - 10))) + "px";
+            
+            const i = apple.getBoundingClientRect();
+            if (i.top < container.getBoundingClientRect().bottom) {
+                allPassed = false;
+            }
+
+            if (i.left < p.right && i.right > p.left && i.top < p.bottom && i.bottom > p.top) {
+                hit = true;
+            }
+        });
+
+        if (hit) {
+            apples.forEach(a => { if (a.parentNode) a.parentNode.removeChild(a); });
+            clearInterval(fall);
+            endGame();
+            return;
+        }
+
+        if (allPassed || y > container.offsetHeight + 50) {
+            apples.forEach(a => { if (a.parentNode) a.parentNode.removeChild(a); });
+            clearInterval(fall);
+        }
+    }, 20);
+}
+
+let flashTimer = null;
+function triggerFlash() {
+    isFlashActive = true;
+    container.style.backgroundImage = `url('${ruiImages.star}')`;
+
+    if (flashTimer) clearTimeout(flashTimer);
+
+    flashTimer = setTimeout(() => {
+        isFlashActive = false;
+        let bgIdx = Math.floor(score / 500) % bgImages.length;
+        container.style.backgroundImage = `url('${bgImages[bgIdx]}')`;
+    }, 5000);
+}
+
+function endGame() {
+    isGameRunning = false; 
+    bgm.pause(); 
+    clearInterval(fruitInterval);
+    isFlashActive = false;
+    container.style.backgroundImage = `url('${ruiImages.ending}')`;
+    document.getElementById("game-over").style.display = "flex";
+    document.getElementById("final-score").innerText = "최종 점수: " + score;
+}
